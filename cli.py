@@ -28,19 +28,6 @@ def save_session(session_name, data):
     with open(path, "w") as f:
         json.dump(data, f, indent=2)
 
-def select_agent():
-    # For demo: hardcoded agents, you can expand dynamically
-    agents = {
-        "1": "CTOAgent",
-        "2": "PMAgent",
-        "3": "InvestorAgent"
-    }
-    print("\nChoose an agent:")
-    for k, v in agents.items():
-        print(f"{k}: {v}")
-    choice = input("Agent number: ").strip()
-    return agents.get(choice, "CTOAgent")
-
 def main():
     print("=== Welcome to StartMind CLI ===\n")
 
@@ -88,32 +75,42 @@ def main():
         elif user_input == "":
             continue
 
-        agent_name = select_agent()
-        agent = Agent(agent_name)
+        # Automatically select agents using MCP
+        agent_roles = context_protocol.select_agents(user_input)
+        if not agent_roles:
+            print("No relevant agents found for the input. Try rephrasing.")
+            continue
 
-        # Get context with MCP
-        context = context_protocol.get_context(user_input)
+        for agent_name in agent_roles:
+            agent = Agent(agent_name)
 
-        # Generate prompt
-        prompt = agent.generate_prompt(context, user_input)
+            try:
+                # Retrieve context and memory
+                context = context_protocol.get_context(user_input)
+                memory_context = memory_store.get_recent(role=agent_name)
+                full_context = f"{context}\n\nRecent Memory:\n{memory_context}"
 
-        # Call LLM
-        llm_response = agent.call_llm(prompt)
+                # Generate prompt and get LLM response
+                prompt = agent.generate_prompt(full_context, user_input)
+                llm_response = agent.call_llm(prompt)
 
-        # Show response
-        print(f"\n[{agent_name}]: {llm_response}\n")
+                print(f"\n[{agent_name}]: {llm_response}\n")
 
-        # Update memory
-        memory_store.add_to_memory(user_input, llm_response)
+                # Update memory and save session
+                memory_store.log_user(user_input)
+                memory_store.log_agent(agent_name, llm_response)
 
-        # Save to session
-        interaction = {
-            "timestamp": datetime.datetime.now().isoformat(),
-            "agent": agent_name,
-            "user_input": user_input,
-            "llm_response": llm_response
-        }
-        history.append(interaction)
+                interaction = {
+                    "timestamp": datetime.datetime.now().isoformat(),
+                    "agent": agent_name,
+                    "user_input": user_input,
+                    "llm_response": llm_response
+                }
+                history.append(interaction)
+
+            except Exception as e:
+                print(f"Error running {agent_name}: {e}")
+
         save_session(session_name, history)
 
 if __name__ == "__main__":

@@ -1,0 +1,24 @@
+/* tui/styles.css */
+#input {
+    dock: bottom;
+    border: round yellow;
+    padding: 1;
+}
+
+#welcome, #session_loader {
+    padding: 1;
+    content-align: center middle;
+    color: cyan;
+}
+
+#chat_output {
+    padding: 1;
+    height: auto;
+    overflow: auto;
+    background: black;
+    color: white;
+}
+
+#scroll_area {
+    height: 1fr;
+}
