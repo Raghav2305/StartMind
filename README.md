@@ -47,12 +47,12 @@ startmind/
 ├── mcp/
 │   ├── context_protocol.py
 │   ├── memory.py
-│   └── prompt_builder.py
+│   └── controller.py
 │
 ├── rag/
 │   ├── retriever.py
 │   ├── ingest.py
-│   └── docs/
+│   └── sources/
 │       ├── lean_startup.pdf
 │       ├── yc_notes.md
 │       ├── tech_stacks.md
@@ -61,7 +61,7 @@ startmind/
 ├── core/
 │   ├── llm_interface.py
 │   ├── config.py
-│   └── utils.py
+│  
 │
 ├── sessions/
 │   └── memory_db.json
@@ -161,6 +161,8 @@ python tui/app.py
 - [x] LLM integration with OpenAI
 - [x] Document embedding via FAISS
 - [x] JSON memory across sessions
+- [x] MCP for persisting context and system prompts across the agents while running.
+- [x] RAG for real-time retrieval of documents, pdfs, etc added during the ingestion phase.   
 - [x] Agent architecture and prompt templating
 - [x] CLI interface
 - [x] TUI via Textual
@@ -184,7 +186,7 @@ Try these to test agent routing:
 
 - [ ] Vector memory for long-term agent learning
 - [ ] Agent-to-agent conversations
-- [ ] Plugin/tool support (e.g. calculator, API calls)
+- [ ] MCP Plugin/tool support
 - [ ] User interface for non-developers (dashboard or exportable summary)
 - [ ] PDF investor reports and product documentation export
 
@@ -212,10 +214,5 @@ MIT License
 
 ---
 
-## 📸 TUI Preview
-
-> _(Add a terminal screenshot or gif showing the TUI in action here)_
-
----
 
 ### 🚀 Built with ❤️ by [Raghav Kavimandan](https://github.com/yourgithubusername)
