@@ -7,7 +7,7 @@ from langchain_openai import OpenAIEmbeddings
 class VectorMemory:
     def __init__(self, embedding_model="text-embedding-3-large"):
         self.embeddings = OpenAIEmbeddings(model=embedding_model)
-        self.dimension = 1536  # Dimension for text-embedding-3-large
+        self.dimension = 3072  # Dimension for text-embedding-3-large
         self.index = faiss.IndexFlatL2(self.dimension)
         self.memory_vectors = []
         self.memory_texts = []

@@ -2,12 +2,13 @@
 
 from rag.retriever import Retriever
 from mcp.memory import VectorMemory
-from core.llm_interface import call_llm
+from core.llm_interface import LLM
 
 class MCP:
     def __init__(self, memory: VectorMemory, retriever: Retriever):
         self.memory = memory
         self.retriever = retriever
+        self.llm = LLM() # Instantiate the LLM
         self.agent_selection_prompt = """
 Given the user input, select the most appropriate agent to respond. The available agents are:
 - CTOAgent: For technical questions about technology stacks, architecture, and APIs.
@@ -22,7 +23,7 @@ Return only the name of the agent, e.g., "CTOAgent".
     def _get_agent_from_llm(self, user_input: str) -> str:
         """Selects an agent using an LLM call."""
         prompt = self.agent_selection_prompt.format(user_input=user_input)
-        agent_name = call_llm(prompt, model="gpt-3.5-turbo").strip()
+        agent_name = self.llm.complete(prompt, system_prompt="You are an agent router.").strip()
         
         # Ensure the returned agent name is one of the valid agents
         if agent_name not in ["CTOAgent", "PMAgent", "InvestorAgent"]:

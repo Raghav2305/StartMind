@@ -6,7 +6,7 @@ from langchain_openai import OpenAIEmbeddings
 
 class Retriever:
     def __init__(self, index_dir="rag/index"):
-        embeddings = OpenAIEmbeddings()
+        embeddings = OpenAIEmbeddings(model="text-embedding-3-large")
         self.vectorstore = FAISS.load_local(index_dir, embeddings, allow_dangerous_deserialization=True)
 
     def get_relevant_docs(self, query: str, k=3):

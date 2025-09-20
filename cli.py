@@ -4,7 +4,9 @@ import datetime
 import sys
 
 from mcp.context_protocol import MCP
-from agents.agent import Agent
+from agents.cto_agent import CTOAgent
+from agents.pm_agent import PMAgent
+from agents.investor_agent import InvestorAgent
 from rag.retriever import Retriever
 from mcp.memory import VectorMemory
 
@@ -72,6 +74,13 @@ def main():
     memory_store = VectorMemory()
     context_protocol = MCP(memory_store, retriever)
 
+    # Initialize agents
+    agents = {
+        "CTOAgent": CTOAgent(),
+        "PMAgent": PMAgent(),
+        "InvestorAgent": InvestorAgent()
+    }
+
     # Main loop
     if sys.stdin.isatty():
         print("\nType 'exit' to quit, 'history' to view session history.\n")
@@ -79,16 +88,16 @@ def main():
             user_input = input("You: ").strip()
             if user_input.lower() == "exit":
                 break
-            process_input(user_input, context_protocol, memory_store, history, session_name)
+            process_input(user_input, context_protocol, memory_store, history, session_name, agents)
     else:
         for user_input in sys.stdin:
             user_input = user_input.strip()
             if not user_input:
                 continue
             print(f"You: {user_input}")
-            process_input(user_input, context_protocol, memory_store, history, session_name)
+            process_input(user_input, context_protocol, memory_store, history, session_name, agents)
 
-def process_input(user_input, context_protocol, memory_store, history, session_name):
+def process_input(user_input, context_protocol, memory_store, history, session_name, agents):
     if user_input.lower() == "history":
         if not history:
             print("No history yet.")
@@ -104,7 +113,10 @@ def process_input(user_input, context_protocol, memory_store, history, session_n
         return
 
     for agent_name in agent_roles:
-        agent = Agent(agent_name)
+        agent = agents.get(agent_name)
+        if not agent:
+            print(f"Error: Agent '{agent_name}' not found.")
+            continue
 
         try:
             # Retrieve context and memory
@@ -113,9 +125,8 @@ def process_input(user_input, context_protocol, memory_store, history, session_n
             memory_str = "\n".join(memory_context)
             full_context = f"{context}\n\nRecent Memory:\n{memory_str}"
 
-            # Generate prompt and get LLM response
-            prompt = agent.generate_prompt(full_context, user_input)
-            llm_response = agent.call_llm(prompt)
+            # Generate response using the agent's respond method
+            llm_response = agent.respond(user_input, full_context)
 
             print(f"\n[{agent_name}]: {llm_response}\n")
 
