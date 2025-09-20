@@ -13,7 +13,7 @@ from textual.scroll_view import ScrollView
 from mcp.context_protocol import MCP
 from agents.agent import Agent
 from rag.retriever import Retriever
-from mcp.memory import Memory
+from mcp.memory import VectorMemory
 
 SESSIONS_DIR = "sessions"
 
@@ -94,7 +94,7 @@ class StartMindTUI(App):
             session_loader.update(f"Created new session: {self.session_name}")
 
         self.retriever = Retriever()
-        self.memory_store = Memory()
+        self.memory_store = VectorMemory()
         self.context_protocol = MCP(self.memory_store, self.retriever)
 
     def load_session(self, name):
@@ -121,16 +121,19 @@ class StartMindTUI(App):
         if not self.user_input:
             return
 
-        agent_name = self.auto_select_agent(self.user_input)
+        agent_name = self.context_protocol.select_agents(self.user_input)[0]
         agent = Agent(agent_name)
 
         context = self.context_protocol.get_context(self.user_input)
-        prompt = agent.generate_prompt(context, self.user_input)
+        memory_context = self.memory_store.get_recent(self.user_input)
+        full_context = f"{context}\n\nRecent Memory:\n{'\n'.join(memory_context)}"
+        
+        prompt = agent.generate_prompt(full_context, self.user_input)
         llm_response = agent.call_llm(prompt)
 
         self.append_output(self.user_input, agent_name, llm_response)
 
-        self.memory_store.add(user_query=self.user_input, agent_response=llm_response)
+        self.memory_store.add_to_memory(self.user_input, llm_response)
         self.history.append({
             "timestamp": datetime.datetime.now().isoformat(),
             "agent": agent_name,
@@ -138,16 +141,6 @@ class StartMindTUI(App):
             "llm_response": llm_response,
         })
         self.save_session()
-
-    def auto_select_agent(self, prompt):
-        prompt = prompt.lower()
-        if "feature" in prompt or "design" in prompt or "mvp" in prompt:
-            return "PMAgent"
-        elif "invest" in prompt or "fund" in prompt or "valuation" in prompt:
-            return "InvestorAgent"
-        else:
-            return "CTOAgent"
-
 
 if __name__ == "__main__":
     StartMindTUI().run()

@@ -1,0 +1,60 @@
+
+# Project Summary: StartMind
+
+StartMind is an AI-powered multi-agent system that acts as a co-founder for startups. It provides guidance on product management, technology stacks, and investment strategies. The system is designed with a modular architecture, allowing for easy expansion and maintenance.
+
+## Core Components
+
+### 1. Agents
+The system is composed of three specialized agents:
+- **PMAgent**: Advises on product features, roadmaps, and MVP scope.
+- **CTOAgent**: Recommends technology stacks, architecture, and APIs.
+- **InvestorAgent**: Provides insights into funding strategies, valuation, and investor pitches.
+
+Each agent is built upon a `BaseAgent` class, which provides a common interface for interacting with the language model.
+
+### 2. Modular Cognitive Process (MCP)
+The MCP layer is the central controller of the system. It is responsible for:
+- **Agent Selection**: It uses a keyword-based approach to select the most appropriate agent for a given user query.
+- **Context Retrieval**: It retrieves relevant documents from the RAG system to provide context to the agents.
+- **Memory Management**: It interacts with the memory system to maintain a history of interactions.
+
+### 3. Retrieval-Augmented Generation (RAG)
+The RAG system enhances the agents' knowledge by providing them with relevant information from a collection of documents. It uses a FAISS vector store to perform similarity searches and retrieve the most relevant document chunks. The `ingest.py` script is used to process and index the documents.
+
+### 4. Memory
+The memory system persists the conversation history in JSON files. This allows the system to maintain context across sessions. The `Memory` class provides methods for logging user inputs and agent responses.
+
+### 5. User Interfaces
+StartMind provides two user interfaces:
+- **CLI (Command-Line Interface)**: A simple and intuitive interface for developers who prefer to work in the terminal.
+- **TUI (Text-based User Interface)**: A more interactive and user-friendly interface built with the `Textual` library.
+
+## Future Roadmap
+
+### Mid-term Goals (More involved features)
+
+1.  **Agent-to-Agent Conversations:** Enable agents to communicate with each other to solve more complex problems.
+2.  **Tool Use and Function Calling:** Empower agents with the ability to use external tools and APIs.
+3.  **Web Search Integration:** Give agents the ability to search the web for up-to-date information.
+
+### Long-term Vision (Cutting-edge features)
+
+1.  **Autonomous Goal Seeking:** Move towards a more autonomous system where the user provides a high-level goal and the agents work together to achieve it.
+2.  **Self-improving System:** The system could learn from its interactions and continuously improve its performance.
+3.  **Multi-modal Capabilities:** Extend the system to handle multi-modal inputs and outputs.
+
+## Activity Log
+
+- **2025-09-20**:
+    - Analyzed the project structure and file contents.
+    - Read the `README.md` file to understand the project's purpose and features.
+    - Examined the core components of the application, including the agents, MCP, RAG, and memory systems.
+    - Created `project_summary.md` file to document the project's architecture and workflows.
+    - Renamed `project_summary.md` to `project_summary.txt`.
+    - Implemented dynamic agent selection using an LLM in `mcp/context_protocol.py`.
+    - Improved RAG chunking strategy in `rag/ingest.py` by using `SemanticChunker`.
+    - Replaced the JSON-based memory system with a vector-based memory system in `mcp/memory.py`.
+    - Updated `cli.py` and `tui/tui_app.py` to use the new vector-based memory system.
+    - Expanded the RAG knowledge base with articles on lean startup, product management, and startup funding.
+    - Ingested the new documents into the RAG system.

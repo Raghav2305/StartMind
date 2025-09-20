@@ -4,7 +4,8 @@ import os
 from langchain_community.vectorstores import FAISS
 from langchain_openai import OpenAIEmbeddings
 from langchain_community.document_loaders import PyPDFLoader, TextLoader, UnstructuredMarkdownLoader
-from langchain.text_splitter import RecursiveCharacterTextSplitter
+from langchain_experimental.text_splitter import SemanticChunker
+from tqdm import tqdm
 
 DOCS_DIR = "rag/sources"
 INDEX_DIR = "rag/index"
@@ -19,17 +20,24 @@ def load_documents():
             loaders.append(UnstructuredMarkdownLoader(path))
         elif file.endswith(".txt"):
             loaders.append(TextLoader(path))
-    return sum([loader.load() for loader in loaders], [])  # flatten
+    
+    documents = []
+    for loader in tqdm(loaders, desc="Loading documents"):
+        documents.extend(loader.load())
+    return documents
 
 def ingest():
     print("[Ingesting documents...]")
     documents = load_documents()
 
-    splitter = RecursiveCharacterTextSplitter(chunk_size=300, chunk_overlap=50)
+    embeddings = OpenAIEmbeddings(model="text-embedding-3-large")
+    splitter = SemanticChunker(embeddings)
     docs = splitter.split_documents(documents)
 
-    embeddings = OpenAIEmbeddings()
-    vectorstore = FAISS.from_documents(docs, embeddings)
+    print(f"Splitting {len(documents)} documents into {len(docs)} chunks.")
+
+    print("Creating FAISS index...")
+    vectorstore = FAISS.from_documents(tqdm(docs, desc="Embedding documents"), embeddings)
 
     vectorstore.save_local(INDEX_DIR)
     print(f"[Ingested {len(docs)} chunks into FAISS index]")
